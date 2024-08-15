@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Workout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        section {
+            margin-top: 20px;
+        }
+        .workout-log {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .workout-log-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            position: relative;
+        }
+        .workout-log-item p {
+            margin: 0;
+        }
+        .workout-log-item .date {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Workout Log</h1>
+            <nav>
+                <a href="index.html">Home</a> | 
+                <a href="log.html">Log Workout</a> | 
+                <a href="favorites.html">Favorites</a>
+            </nav>
+        </header>
+        <section>
+            <h2>Your Workout Logs</h2>
+            <div id="workoutLogs" class="workout-log"></div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const workoutLogsDiv = document.getElementById('workoutLogs');
+            const workoutLogs = JSON.parse(localStorage.getItem('workoutLogs')) || [];
+            workoutLogsDiv.innerHTML = workoutLogs.map(log => `
+                <div class="workout-log-item">
+                    <p>${log.workout}</p>
+                    <p class="date">Logged on: ${log.date}</p>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
