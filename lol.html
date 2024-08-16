@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gym Trainer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            text-align: center;
+        }
+        header {
+            background-color: white;
+            color: black;
+            padding: 1em 0;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #1E90FF; /* Darker Blue */
+            padding: 1em 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            margin: 0 10px;
+            background-color: #1E90FF; /* Darker Blue */
+            transition: background-color 0.3s;
+        }
+        nav a.active {
+            background-color: #1C86EE;
+        }
+        nav a:hover {
+            background-color: #1874CD; /* Hover Effect */
+        }
+        section {
+            padding: 20px;
+            display: none;
+            text-align: center;
+        }
+        section.active {
+            display: block;
+        }
+        .exercise-list {
+            margin: 20px 0;
+        }
+        .exercise-list label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .exercise-list button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #1E90FF; /* Darker Blue */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .exercise-list button:hover {
+            background-color: #1874CD; /* Hover Effect */
+        }
+        .log-item, .saved-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        .save-btn {
+            background-color: #28a745; /* Green */
+        }
+        .save-btn:hover {
+            background-color: #218838; /* Darker Green */
+        }
+        .log-btn {
+            background-color: #ffc107; /* Yellow */
+        }
+        .log-btn:hover {
+            background-color: #e0a800; /* Darker Yellow */
+        }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn:hover {
+            background-color: #c82333; /* Darker Red */
+        }
+        .system-message {
+            margin-top: 20px;
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    AI Gym Trainer
+</header>
+
+<nav>
+    <a href="#" class="nav-link active" data-target="home">Home</a>
+    <a href="#" class="nav-link" data-target="log">Log</a>
+    <a href="#" class="nav-link" data-target="saved">Saved</a>
+</nav>
+
+<section id="home" class="active">
+    <h2>Generate Workout</h2>
+    <div class="exercise-list">
+        <label>
+            <input type="checkbox" id="push" name="workout-type" value="Push">
+            Push Day
+        </label>
+        <label>
+            <input type="checkbox" id="pull" name="workout-type" value="Pull">
+            Pull Day
+        </label>
+        <label>
+            <input type="checkbox" id="legs" name="workout-type" value="Legs">
+            Leg Day
+        </label>
+
+        <div id="focus-options" style="display: none;">
+            <label id="push-options" style="display: none;">
+                <input type="radio" name="focus" value="Chest Focus">
+                Chest Focus
+                <input type="radio" name="focus" value="Tricep Focus">
+                Tricep Focus
+                <input type="radio" name="focus" value="Shoulder Focus">
+                Shoulder Focus
+            </label>
+            <label id="pull-options" style="display: none;">
+                <input type="radio" name="focus" value="Bicep & Forearm Focus">
+                Bicep & Forearm Focus
+                <input type="radio" name="focus" value="Upper Back Focus">
+                Upper Back Focus
+                <input type="radio" name="focus" value="Lower Back Focus">
+                Lower Back Focus
+            </label>
+            <label id="legs-options" style="display: none;">
+                <input type="radio" name="focus" value="Quad Focus">
+                Quad Focus
+                <input type="radio" name="focus" value="Hamstring Focus">
+                Hamstring Focus
+                <input type="radio" name="focus" value="Calves Focus">
+                Calves Focus
+            </label>
+        </div>
+
+        <button onclick="generateWorkout()">Generate Workout</button>
+
+        <div id="workout-result" style="display: none;">
+            <h3>Your Workout:</h3>
+            <p id="workout"></p>
+            <button class="log-btn" onclick="logWorkout()">Log Workout</button>
+            <button class="save-btn" onclick="saveWorkout()">Save Workout</button>
+        </div>
+    </div>
+    <div id="system-message" class="system-message"></div>
+</section>
+
+<section id="log">
+    <h2>Workout Log</h2>
+    <div id="log-list"></div>
+</section>
+
+<section id="saved">
+    <h2>Saved Workouts</h2>
+    <div id="saved-list"></div>
+</section>
+
+<script>
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+    const pushCheckbox = document.getElementById('push');
+    const pullCheckbox = document.getElementById('pull');
+    const legsCheckbox = document.getElementById('legs');
+    const focusOptions = document.getElementById('focus-options');
+    const pushOptions = document.getElementById('push-options');
+    const pullOptions = document.getElementById('pull-options');
+    const legsOptions = document.getElementById('legs-options');
+    const workoutResult = document.getElementById('workout-result');
+    const workoutText = document.getElementById('workout');
+    const logList = document.getElementById('log-list');
+    const savedList = document.getElementById('saved-list');
+    const systemMessage = document.getElementById('system-message');
+    let generatedWorkout = '';
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            navLinks.forEach(link => link.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.getAttribute('data-target')).classList.add('active');
+            loadLog();
+            loadSaved();
+            systemMessage.innerHTML = '';  // Clear system message when navigating
+        });
+    });
+
+    [pushCheckbox, pullCheckbox, legsCheckbox].forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            pushOptions.style.display = this.checked && this.id === 'push' ? 'block' : 'none';
+            pullOptions.style.display = this.checked && this.id === 'pull' ? 'block' : 'none';
+            legsOptions.style.display = this.checked && this.id === 'legs' ? 'block' : 'none';
+            focusOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    });
+
+    function generateWorkout() {
+        const workoutType = document.querySelector('input[name="workout-type"]:checked').value;
+        const focus = document.querySelector('input[name="focus"]:checked').value;
+        const exercises = {
+            'Push': {
+                'Chest Focus': ['Bench Press', 'Incline Dumbbell Press', 'Chest Fly', 'Push-Ups', 'Cable Crossover'],
+                'Tricep Focus': ['Tricep Dips', 'Overhead Tricep Extension', 'Skull Crushers', 'Close-Grip Bench Press', 'Tricep Kickback'],
+                'Shoulder Focus': ['Shoulder Press', 'Lateral Raise', 'Front Raise', 'Arnold Press', 'Reverse Pec Deck']
+            },
+            'Pull': {
+                'Bicep & Forearm Focus': ['Bicep Curls', 'Hammer Curls', 'Wrist Curls', 'Preacher Curls', 'Zottman Curls'],
+                'Upper Back Focus': ['Pull-Ups', 'Bent Over Rows', 'Face Pulls', 'Lat Pulldown', 'Seated Cable Rows'],
+                'Lower Back Focus': ['Deadlifts', 'Hyperextensions', 'Good Mornings', 'Rack Pulls', 'Superman']
+            },
+            'Legs': {
+                'Quad Focus': ['Squats', 'Leg Press', 'Lunges', 'Leg Extension', 'Step-Ups'],
+                'Hamstring Focus': ['Romanian Deadlifts', 'Leg Curls', 'Glute Bridge', 'Good Mornings', 'Single-Leg Deadlift'],
+                'Calves Focus': ['Calf Raises', 'Seated Calf Raise', 'Donkey Calf Raise', 'Jump Rope', 'Box Jumps']
+            }
+        };
+
+        const selectedExercises = exercises[workoutType][focus].sort(() => 0.5 - Math.random()).slice(0, 3);
+        generatedWorkout = `${workoutType} Day (${focus}): ${selectedExercises.join(', ')}`;
+        workoutText.innerText = generatedWorkout;
+        workoutResult.style.display = 'block';
+    }
+
+    function logWorkout() {
+        const log = JSON.parse(localStorage.getItem('workoutLog')) || [];
+        const currentDateTime = new Date().toLocaleString();
+        log.push({ workout: generatedWorkout, time: currentDateTime });
+        localStorage.setItem('workoutLog', JSON.stringify(log));
+        loadLog();
+        systemMessage.innerHTML = 'Workout logged successfully!';
+    }
+
+    function saveWorkout() {
+        const saved = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
+        saved.push(generatedWorkout);
+        localStorage.setItem('savedWorkouts', JSON.stringify(saved));
+        loadSaved();
+        systemMessage.innerHTML = 'Workout saved successfully!';
+    }
+
+    function loadLog() {
+        logList.innerHTML = '';
+        const log = JSON.parse(localStorage.getItem('workoutLog')) || [];
+        log.forEach(entry => {
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.innerHTML = `<p>${entry.workout}</p><small>${entry.time}</small>`;
+            logList.appendChild(logItem);
+        });
+    }
+
+    function loadSaved() {
+        savedList.innerHTML = '';
+        const saved = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
+        saved.forEach((workout, index) => {
+            const savedItem = document.createElement('div');
+            savedItem.className = 'saved-item';
+            savedItem.innerHTML = `<p>${workout}</p><button class="remove-btn" onclick="removeSaved(${index})">Remove</button>`;
+            savedList.appendChild(savedItem);
+        });
+    }
+
+    function removeSaved(index) {
+        const saved = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
+        saved.splice(index, 1);
+        localStorage.setItem('savedWorkouts', JSON.stringify(saved));
+        loadSaved();
+    }
+
+    window.onload = function() {
+        loadLog();
+        loadSaved();
+    };
+</script>
+
+</body>
+</html>
